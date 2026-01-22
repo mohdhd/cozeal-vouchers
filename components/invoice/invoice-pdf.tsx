@@ -8,34 +8,24 @@ import {
   Font,
 } from "@react-pdf/renderer";
 
-// Register fonts that support Arabic - using Google Fonts direct URLs
+// Register Arabic font from jsDelivr CDN (raw TTF files)
+// Using Noto Sans Arabic which has excellent Arabic support
 Font.register({
-  family: "Noto Sans",
+  family: "NotoSansArabic",
   fonts: [
     {
-      src: "https://fonts.gstatic.com/s/notosans/v36/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A99d.ttf",
+      src: "https://cdn.jsdelivr.net/gh/googlefonts/noto-fonts@main/hinted/ttf/NotoSansArabic/NotoSansArabic-Regular.ttf",
       fontWeight: 400,
     },
     {
-      src: "https://fonts.gstatic.com/s/notosans/v36/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyAaAd9d.ttf",
+      src: "https://cdn.jsdelivr.net/gh/googlefonts/noto-fonts@main/hinted/ttf/NotoSansArabic/NotoSansArabic-Bold.ttf",
       fontWeight: 700,
     },
   ],
 });
 
-Font.register({
-  family: "Amiri",
-  fonts: [
-    {
-      src: "https://fonts.gstatic.com/s/amiri/v27/J7aRnpd8CGxBHqUp.ttf",
-      fontWeight: 400,
-    },
-    {
-      src: "https://fonts.gstatic.com/s/amiri/v27/J7acnpd8CGxBHp2VkZY4.ttf",
-      fontWeight: 700,
-    },
-  ],
-});
+// Disable hyphenation to avoid issues
+Font.registerHyphenationCallback((word) => [word]);
 
 const primaryColor = "#0891b2";
 const darkColor = "#0f172a";
@@ -47,12 +37,12 @@ const styles = StyleSheet.create({
   page: {
     padding: 50,
     fontSize: 10,
-    fontFamily: "Noto Sans",
+    fontFamily: "Helvetica",
     backgroundColor: "#ffffff",
   },
   // Arabic text style
   arabicText: {
-    fontFamily: "Amiri",
+    fontFamily: "NotoSansArabic",
   },
   // Header
   header: {
