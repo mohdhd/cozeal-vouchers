@@ -1,0 +1,201 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "search": "Search",
+    "filter": "Filter",
+    "all": "All",
+    "sar": "SAR",
+    "voucher": "voucher",
+    "vouchers": "vouchers"
+  },
+  "nav": {
+    "home": "Home",
+    "checkout": "Checkout",
+    "admin": "Admin",
+    "orders": "Orders",
+    "discounts": "Discount Codes",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "hero": {
+    "badge": "Official CompTIA Partner",
+    "title": "CompTIA Certification",
+    "subtitle": "Exam Vouchers",
+    "description": "Exclusive pricing on CompTIA certification exam vouchers for Saudi Arabian universities. Prepare your students for industry-recognized IT certifications.",
+    "cta": "Order Now",
+    "learnMore": "Learn More"
+  },
+  "features": {
+    "title": "Why Choose Us",
+    "official": {
+      "title": "Official Partner",
+      "description": "We are an authorized CompTIA partner, ensuring authentic vouchers and support."
+    },
+    "pricing": {
+      "title": "University Pricing",
+      "description": "Special discounted rates exclusively for Saudi Arabian educational institutions."
+    },
+    "support": {
+      "title": "Dedicated Support",
+      "description": "Arabic and English support team ready to assist you throughout the process."
+    },
+    "delivery": {
+      "title": "Fast Delivery",
+      "description": "Receive your voucher codes shortly after payment confirmation."
+    }
+  },
+  "checkout": {
+    "title": "Complete Your Order",
+    "universityInfo": "University Information",
+    "universityName": "University Name",
+    "universityNamePlaceholder": "e.g., King Saud University",
+    "vatNumber": "VAT Registration Number",
+    "vatNumberPlaceholder": "e.g., 300000000000003",
+    "optional": "Optional",
+    "contactName": "Contact Person Name",
+    "contactNamePlaceholder": "Full name",
+    "email": "Email Address",
+    "emailPlaceholder": "email@university.edu.sa",
+    "phone": "Phone Number",
+    "phonePlaceholder": "05xxxxxxxx",
+    "orderDetails": "Order Details",
+    "quantity": "Number of Vouchers",
+    "discountCode": "Discount Code",
+    "discountCodePlaceholder": "Enter code",
+    "applyCode": "Apply",
+    "removeCode": "Remove",
+    "orderSummary": "Order Summary",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "vat": "VAT (15%)",
+    "total": "Total",
+    "payNow": "Pay Now",
+    "securePayment": "Secure payment via Tap",
+    "perVoucher": "per voucher",
+    "savings": "You save"
+  },
+  "success": {
+    "title": "Payment Successful!",
+    "message": "Thank you for your order. We have received your payment and will process your vouchers shortly.",
+    "orderNumber": "Order Number",
+    "downloadInvoice": "Download Invoice",
+    "backToHome": "Back to Home",
+    "orderDetails": "Order Details",
+    "whatNext": "What's Next?",
+    "nextSteps": "Our team will review your order and send the voucher codes to your registered email within 24 hours."
+  },
+  "errors": {
+    "invalidCode": "Invalid discount code",
+    "expiredCode": "This discount code has expired",
+    "codeNotActive": "This discount code is not yet active",
+    "usageLimitReached": "This discount code has reached its usage limit",
+    "minQuantity": "Minimum {min} vouchers required for this code",
+    "universityRestricted": "This code is restricted to a specific university",
+    "paymentFailed": "Payment failed. Please try again.",
+    "serverError": "Server error. Please try again later.",
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email address",
+    "invalidPhone": "Please enter a valid phone number"
+  },
+  "invoice": {
+    "title": "TAX INVOICE",
+    "titleAr": "فاتورة ضريبية",
+    "invoiceNumber": "Invoice Number",
+    "date": "Date",
+    "billTo": "Bill To",
+    "from": "From",
+    "description": "Description",
+    "quantity": "Qty",
+    "unitPrice": "Unit Price",
+    "amount": "Amount",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "vat": "VAT (15%)",
+    "total": "Total",
+    "status": "Status",
+    "paid": "PAID",
+    "pending": "PENDING",
+    "securityPlusVoucher": "CompTIA Security+ Exam Voucher",
+    "thankYou": "Thank you for your business!"
+  },
+  "admin": {
+    "dashboard": "Dashboard",
+    "welcome": "Welcome back",
+    "totalOrders": "Total Orders",
+    "totalRevenue": "Total Revenue",
+    "pendingOrders": "Pending Orders",
+    "activeDiscounts": "Active Discounts",
+    "recentOrders": "Recent Orders",
+    "viewAll": "View All",
+    "noOrders": "No orders yet",
+    "orderStatus": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded"
+    },
+    "discounts": {
+      "title": "Discount Codes",
+      "create": "Create New Code",
+      "code": "Code",
+      "type": "Type",
+      "value": "Value",
+      "usage": "Usage",
+      "status": "Status",
+      "validity": "Valid Until",
+      "active": "Active",
+      "inactive": "Inactive",
+      "percentage": "Percentage",
+      "fixed": "Fixed Amount",
+      "minQuantity": "Minimum Quantity",
+      "maxUses": "Maximum Uses",
+      "universityRestriction": "University Restriction",
+      "descriptionEn": "Description (English)",
+      "descriptionAr": "Description (Arabic)",
+      "validFrom": "Valid From",
+      "validUntil": "Valid Until",
+      "unlimited": "Unlimited"
+    },
+    "settings": {
+      "title": "Settings",
+      "pricing": "Pricing",
+      "basePrice": "Base Voucher Price (SAR)",
+      "vatPercentage": "VAT Percentage",
+      "company": "Company Information",
+      "companyNameEn": "Company Name (English)",
+      "companyNameAr": "Company Name (Arabic)",
+      "vatNumber": "VAT Registration Number",
+      "crNumber": "Commercial Registration Number",
+      "saved": "Settings saved successfully"
+    },
+    "orders": {
+      "title": "Orders",
+      "orderNumber": "Order #",
+      "customer": "Customer",
+      "university": "University",
+      "amount": "Amount",
+      "status": "Status",
+      "date": "Date",
+      "details": "Order Details",
+      "contactInfo": "Contact Information",
+      "paymentInfo": "Payment Information"
+    }
+  },
+  "auth": {
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "loginButton": "Sign In",
+    "invalidCredentials": "Invalid email or password",
+    "loginError": "Login failed. Please try again."
+  }
+}

@@ -1,0 +1,201 @@
+{
+  "common": {
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجاح",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "back": "رجوع",
+    "next": "التالي",
+    "submit": "إرسال",
+    "search": "بحث",
+    "filter": "تصفية",
+    "all": "الكل",
+    "sar": "ر.س",
+    "voucher": "قسيمة",
+    "vouchers": "قسائم"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "checkout": "الدفع",
+    "admin": "لوحة التحكم",
+    "orders": "الطلبات",
+    "discounts": "أكواد الخصم",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج"
+  },
+  "hero": {
+    "badge": "شريك CompTIA الرسمي",
+    "title": "شهادات CompTIA",
+    "subtitle": "قسائم الامتحانات",
+    "description": "أسعار حصرية على قسائم امتحانات شهادات CompTIA للجامعات السعودية. جهّز طلابك للحصول على شهادات تقنية المعلومات المعترف بها دولياً.",
+    "cta": "اطلب الآن",
+    "learnMore": "اعرف المزيد"
+  },
+  "features": {
+    "title": "لماذا تختارنا",
+    "official": {
+      "title": "شريك رسمي",
+      "description": "نحن شريك معتمد من CompTIA، مما يضمن قسائم أصلية ودعم موثوق."
+    },
+    "pricing": {
+      "title": "أسعار الجامعات",
+      "description": "أسعار مخفضة خاصة حصرياً للمؤسسات التعليمية السعودية."
+    },
+    "support": {
+      "title": "دعم متخصص",
+      "description": "فريق دعم بالعربية والإنجليزية جاهز لمساعدتك طوال العملية."
+    },
+    "delivery": {
+      "title": "تسليم سريع",
+      "description": "استلم أكواد القسائم خلال فترة قصيرة بعد تأكيد الدفع."
+    }
+  },
+  "checkout": {
+    "title": "أكمل طلبك",
+    "universityInfo": "معلومات الجامعة",
+    "universityName": "اسم الجامعة",
+    "universityNamePlaceholder": "مثال: جامعة الملك سعود",
+    "vatNumber": "الرقم الضريبي",
+    "vatNumberPlaceholder": "مثال: 300000000000003",
+    "optional": "اختياري",
+    "contactName": "اسم المسؤول",
+    "contactNamePlaceholder": "الاسم الكامل",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "email@university.edu.sa",
+    "phone": "رقم الجوال",
+    "phonePlaceholder": "05xxxxxxxx",
+    "orderDetails": "تفاصيل الطلب",
+    "quantity": "عدد القسائم",
+    "discountCode": "كود الخصم",
+    "discountCodePlaceholder": "أدخل الكود",
+    "applyCode": "تطبيق",
+    "removeCode": "إزالة",
+    "orderSummary": "ملخص الطلب",
+    "subtotal": "المجموع الفرعي",
+    "discount": "الخصم",
+    "vat": "ضريبة القيمة المضافة (15%)",
+    "total": "الإجمالي",
+    "payNow": "ادفع الآن",
+    "securePayment": "دفع آمن عبر Tap",
+    "perVoucher": "للقسيمة",
+    "savings": "وفّرت"
+  },
+  "success": {
+    "title": "تم الدفع بنجاح!",
+    "message": "شكراً لطلبك. لقد استلمنا دفعتك وسنقوم بمعالجة قسائمك قريباً.",
+    "orderNumber": "رقم الطلب",
+    "downloadInvoice": "تحميل الفاتورة",
+    "backToHome": "العودة للرئيسية",
+    "orderDetails": "تفاصيل الطلب",
+    "whatNext": "ما التالي؟",
+    "nextSteps": "سيقوم فريقنا بمراجعة طلبك وإرسال أكواد القسائم إلى بريدك الإلكتروني المسجل خلال 24 ساعة."
+  },
+  "errors": {
+    "invalidCode": "كود الخصم غير صالح",
+    "expiredCode": "كود الخصم منتهي الصلاحية",
+    "codeNotActive": "كود الخصم لم يبدأ بعد",
+    "usageLimitReached": "تم استنفاد الحد الأقصى لاستخدام كود الخصم",
+    "minQuantity": "يتطلب هذا الكود حد أدنى {min} قسيمة",
+    "universityRestricted": "هذا الكود مخصص لجامعة محددة",
+    "paymentFailed": "فشل الدفع. يرجى المحاولة مرة أخرى.",
+    "serverError": "خطأ في الخادم. يرجى المحاولة لاحقاً.",
+    "required": "هذا الحقل مطلوب",
+    "invalidEmail": "يرجى إدخال بريد إلكتروني صالح",
+    "invalidPhone": "يرجى إدخال رقم جوال صالح"
+  },
+  "invoice": {
+    "title": "TAX INVOICE",
+    "titleAr": "فاتورة ضريبية",
+    "invoiceNumber": "رقم الفاتورة",
+    "date": "التاريخ",
+    "billTo": "فاتورة إلى",
+    "from": "من",
+    "description": "الوصف",
+    "quantity": "الكمية",
+    "unitPrice": "سعر الوحدة",
+    "amount": "المبلغ",
+    "subtotal": "المجموع الفرعي",
+    "discount": "الخصم",
+    "vat": "ضريبة القيمة المضافة (15%)",
+    "total": "الإجمالي",
+    "status": "الحالة",
+    "paid": "مدفوعة",
+    "pending": "قيد الانتظار",
+    "securityPlusVoucher": "قسيمة امتحان CompTIA Security+",
+    "thankYou": "شكراً لتعاملكم معنا!"
+  },
+  "admin": {
+    "dashboard": "لوحة التحكم",
+    "welcome": "مرحباً بعودتك",
+    "totalOrders": "إجمالي الطلبات",
+    "totalRevenue": "إجمالي الإيرادات",
+    "pendingOrders": "الطلبات المعلقة",
+    "activeDiscounts": "أكواد الخصم النشطة",
+    "recentOrders": "أحدث الطلبات",
+    "viewAll": "عرض الكل",
+    "noOrders": "لا توجد طلبات بعد",
+    "orderStatus": {
+      "pending": "قيد الانتظار",
+      "paid": "مدفوع",
+      "cancelled": "ملغي",
+      "refunded": "مسترد"
+    },
+    "discounts": {
+      "title": "أكواد الخصم",
+      "create": "إنشاء كود جديد",
+      "code": "الكود",
+      "type": "النوع",
+      "value": "القيمة",
+      "usage": "الاستخدام",
+      "status": "الحالة",
+      "validity": "صالح حتى",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "percentage": "نسبة مئوية",
+      "fixed": "مبلغ ثابت",
+      "minQuantity": "الحد الأدنى للكمية",
+      "maxUses": "الحد الأقصى للاستخدام",
+      "universityRestriction": "تقييد الجامعة",
+      "descriptionEn": "الوصف (إنجليزي)",
+      "descriptionAr": "الوصف (عربي)",
+      "validFrom": "صالح من",
+      "validUntil": "صالح حتى",
+      "unlimited": "غير محدود"
+    },
+    "settings": {
+      "title": "الإعدادات",
+      "pricing": "التسعير",
+      "basePrice": "السعر الأساسي للقسيمة (ر.س)",
+      "vatPercentage": "نسبة ضريبة القيمة المضافة",
+      "company": "معلومات الشركة",
+      "companyNameEn": "اسم الشركة (إنجليزي)",
+      "companyNameAr": "اسم الشركة (عربي)",
+      "vatNumber": "رقم التسجيل الضريبي",
+      "crNumber": "رقم السجل التجاري",
+      "saved": "تم حفظ الإعدادات بنجاح"
+    },
+    "orders": {
+      "title": "الطلبات",
+      "orderNumber": "رقم الطلب",
+      "customer": "العميل",
+      "university": "الجامعة",
+      "amount": "المبلغ",
+      "status": "الحالة",
+      "date": "التاريخ",
+      "details": "تفاصيل الطلب",
+      "contactInfo": "معلومات الاتصال",
+      "paymentInfo": "معلومات الدفع"
+    }
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "loginButton": "دخول",
+    "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+    "loginError": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى."
+  }
+}
