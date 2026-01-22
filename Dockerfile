@@ -21,6 +21,12 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
+# Placeholder environment variables for build time
+# These are only used during build - actual values come from runtime environment
+ENV DATABASE_URL="mongodb://placeholder:27017/placeholder"
+ENV NEXTAUTH_SECRET="build-time-placeholder-secret"
+ENV NEXTAUTH_URL="http://localhost:3000"
+
 # Build the application
 RUN npm run build
 
