@@ -25,9 +25,9 @@ if ! docker info > /dev/null 2>&1; then
 fi
 
 # Determine which compose file to use
-COMPOSE_FILE="docker-compose.yml"
+COMPOSE_FILE="docker compose.yml"
 if [ "$2" == "prod" ]; then
-    COMPOSE_FILE="docker-compose.prod.yml"
+    COMPOSE_FILE="docker compose.prod.yml"
     echo "📦 Using production configuration"
 fi
 
@@ -35,12 +35,12 @@ fi
 case "$1" in
     build)
         echo "📦 Building Docker image..."
-        docker-compose -f $COMPOSE_FILE build --no-cache
+        docker compose -f $COMPOSE_FILE build --no-cache
         echo "✅ Build complete!"
         ;;
     start)
         echo "🚀 Starting containers..."
-        docker-compose -f $COMPOSE_FILE up -d
+        docker compose -f $COMPOSE_FILE up -d
         echo "✅ Containers started!"
         echo ""
         echo "   App running at: http://localhost:3000"
@@ -48,36 +48,36 @@ case "$1" in
         ;;
     stop)
         echo "🛑 Stopping containers..."
-        docker-compose -f $COMPOSE_FILE down
+        docker compose -f $COMPOSE_FILE down
         echo "✅ Containers stopped!"
         ;;
     restart)
         echo "🔄 Restarting containers..."
-        docker-compose -f $COMPOSE_FILE down
-        docker-compose -f $COMPOSE_FILE up -d
+        docker compose -f $COMPOSE_FILE down
+        docker compose -f $COMPOSE_FILE up -d
         echo "✅ Containers restarted!"
         ;;
     logs)
         echo "📋 Showing logs (Ctrl+C to exit)..."
-        docker-compose -f $COMPOSE_FILE logs -f
+        docker compose -f $COMPOSE_FILE logs -f
         ;;
     logs-app)
         echo "📋 Showing app logs..."
-        docker-compose -f $COMPOSE_FILE logs -f app
+        docker compose -f $COMPOSE_FILE logs -f app
         ;;
     logs-mongo)
         echo "📋 Showing MongoDB logs..."
-        docker-compose -f $COMPOSE_FILE logs -f mongo
+        docker compose -f $COMPOSE_FILE logs -f mongo
         ;;
     status)
         echo "📊 Container status:"
-        docker-compose -f $COMPOSE_FILE ps
+        docker compose -f $COMPOSE_FILE ps
         ;;
     seed)
         echo "🌱 Running database seed..."
         echo "   This will create the admin account and default settings."
         echo ""
-        docker-compose -f $COMPOSE_FILE exec app npx tsx scripts/seed.ts
+        docker compose -f $COMPOSE_FILE exec app npx tsx scripts/seed.ts
         echo ""
         echo "✅ Seed complete!"
         ;;
@@ -86,14 +86,14 @@ case "$1" in
         echo ""
         
         # Build if needed
-        if ! docker-compose -f $COMPOSE_FILE images -q app 2>/dev/null | grep -q .; then
+        if ! docker compose -f $COMPOSE_FILE images -q app 2>/dev/null | grep -q .; then
             echo "📦 Building Docker image..."
-            docker-compose -f $COMPOSE_FILE build
+            docker compose -f $COMPOSE_FILE build
         fi
         
         # Start containers
         echo "🚀 Starting containers..."
-        docker-compose -f $COMPOSE_FILE up -d
+        docker compose -f $COMPOSE_FILE up -d
         
         # Wait for MongoDB to be ready
         echo "⏳ Waiting for MongoDB to be ready..."
@@ -101,7 +101,7 @@ case "$1" in
         
         # Run seed
         echo "🌱 Seeding database..."
-        docker-compose -f $COMPOSE_FILE exec app npx tsx scripts/seed.ts
+        docker compose -f $COMPOSE_FILE exec app npx tsx scripts/seed.ts
         
         echo ""
         echo "=============================================="
@@ -119,25 +119,25 @@ case "$1" in
         ;;
     shell)
         echo "🐚 Opening shell in app container..."
-        docker-compose -f $COMPOSE_FILE exec app sh
+        docker compose -f $COMPOSE_FILE exec app sh
         ;;
     mongo-shell)
         echo "🐚 Opening MongoDB shell..."
-        if [ "$COMPOSE_FILE" == "docker-compose.prod.yml" ]; then
+        if [ "$COMPOSE_FILE" == "docker compose.prod.yml" ]; then
             source .env
-            docker-compose -f $COMPOSE_FILE exec mongo mongosh -u ${MONGO_USERNAME:-admin} -p ${MONGO_PASSWORD:-password} --authenticationDatabase admin cozeal
+            docker compose -f $COMPOSE_FILE exec mongo mongosh -u ${MONGO_USERNAME:-admin} -p ${MONGO_PASSWORD:-password} --authenticationDatabase admin cozeal
         else
-            docker-compose -f $COMPOSE_FILE exec mongo mongosh cozeal
+            docker compose -f $COMPOSE_FILE exec mongo mongosh cozeal
         fi
         ;;
     backup)
         echo "💾 Creating MongoDB backup..."
         BACKUP_FILE="backup_$(date +%Y%m%d_%H%M%S).gz"
-        if [ "$COMPOSE_FILE" == "docker-compose.prod.yml" ]; then
+        if [ "$COMPOSE_FILE" == "docker compose.prod.yml" ]; then
             source .env
-            docker-compose -f $COMPOSE_FILE exec mongo mongodump --uri="mongodb://${MONGO_USERNAME:-admin}:${MONGO_PASSWORD:-password}@localhost:27017/cozeal?authSource=admin" --archive --gzip | cat > $BACKUP_FILE
+            docker compose -f $COMPOSE_FILE exec mongo mongodump --uri="mongodb://${MONGO_USERNAME:-admin}:${MONGO_PASSWORD:-password}@localhost:27017/cozeal?authSource=admin" --archive --gzip | cat > $BACKUP_FILE
         else
-            docker-compose -f $COMPOSE_FILE exec mongo mongodump --uri="mongodb://localhost:27017/cozeal" --archive --gzip | cat > $BACKUP_FILE
+            docker compose -f $COMPOSE_FILE exec mongo mongodump --uri="mongodb://localhost:27017/cozeal" --archive --gzip | cat > $BACKUP_FILE
         fi
         echo "✅ Backup created: $BACKUP_FILE"
         ;;
@@ -146,7 +146,7 @@ case "$1" in
         read -p "Are you sure? (y/N) " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
-            docker-compose -f $COMPOSE_FILE down -v --rmi local
+            docker compose -f $COMPOSE_FILE down -v --rmi local
             echo "✅ Cleanup complete!"
         else
             echo "❌ Cancelled"
@@ -172,7 +172,7 @@ case "$1" in
         echo "  clean       - Remove containers, volumes, and images"
         echo ""
         echo "Options:"
-        echo "  prod        - Use production config (docker-compose.prod.yml)"
+        echo "  prod        - Use production config (docker compose.prod.yml)"
         echo ""
         echo "Examples:"
         echo "  $0 init            # First-time setup (recommended)"
