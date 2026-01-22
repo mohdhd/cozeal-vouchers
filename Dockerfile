@@ -6,8 +6,8 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install ALL dependencies (including devDependencies for build)
+RUN npm ci
 
 # Stage 2: Builder
 FROM node:20-alpine AS builder
@@ -39,6 +39,13 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+
+# Copy scripts and package files for seeding
+COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/package.json ./package.json
+
+# Install only production deps + tsx for seed script in runner
+RUN npm install --omit=dev && npm install tsx
 
 # Set correct permissions
 USER nextjs
