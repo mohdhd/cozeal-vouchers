@@ -33,12 +33,12 @@ services:
     image: mongo:7
     container_name: cozeal-mongodb
     restart: unless-stopped
-    ports:
-      - "27017:27017"
+    # No port forwarding - only accessible within Docker network
     environment:
       - MONGO_INITDB_DATABASE=cozeal
     volumes:
-      - mongodb_data:/data/db
+      # Persist data on host filesystem
+      - ./data/mongodb:/data/db
     networks:
       - cozeal-network
     healthcheck:
@@ -51,6 +51,3 @@ services:
 networks:
   cozeal-network:
     driver: bridge
-
-volumes:
-  mongodb_data:

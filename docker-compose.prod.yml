@@ -44,14 +44,14 @@ services:
     image: mongo:7
     container_name: cozeal-mongodb
     restart: always
-    ports:
-      - "27017:27017"
+    # No port forwarding - only accessible within Docker network for security
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME:-admin}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-password}
       - MONGO_INITDB_DATABASE=cozeal
     volumes:
-      - mongodb_data:/data/db
+      # Persist data on host filesystem
+      - ./data/mongodb:/data/db
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     networks:
       - cozeal-network
@@ -73,6 +73,3 @@ services:
 networks:
   cozeal-network:
     driver: bridge
-
-volumes:
-  mongodb_data:

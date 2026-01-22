@@ -44,7 +44,7 @@ case "$1" in
         echo "✅ Containers started!"
         echo ""
         echo "   App running at: http://localhost:3000"
-        echo "   MongoDB running at: localhost:27017"
+        echo "   MongoDB accessible within Docker network only"
         ;;
     stop)
         echo "🛑 Stopping containers..."
