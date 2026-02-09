@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { StudentRecipientsCard } from "@/components/admin/student-recipients-card";
 import {
   ArrowLeft,
   Building2,
@@ -28,7 +29,7 @@ type Props = {
 export default async function OrderDetailPage({ params }: Props) {
   const session = await auth();
 
-  if (!session) {
+  if (!session || session.user?.role !== "ADMIN") {
     redirect("/admin/login");
   }
 
@@ -121,7 +122,7 @@ export default async function OrderDetailPage({ params }: Props) {
                 <Building2 className="mt-0.5 h-4 w-4 text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">University</p>
-                  <p className="font-semibold">{order.universityName}</p>
+                  <p className="font-semibold">{order.customerName}</p>
                   {order.customerVatNumber && (
                     <p className="text-sm text-muted-foreground mt-1">
                       VAT: <span className="font-mono">{order.customerVatNumber}</span>
@@ -308,6 +309,22 @@ export default async function OrderDetailPage({ params }: Props) {
             </div>
           </CardContent>
         </Card>
+
+        {/* Student Recipients - For DIRECT_TO_STUDENTS orders */}
+        <StudentRecipientsCard
+          orderId={order._id.toString()}
+          orderStatus={order.status}
+          deliveryMethod={order.deliveryMethod}
+          recipients={(order.studentRecipients || []).map((r) => ({
+            name: r.name,
+            email: r.email,
+            studentId: r.studentId,
+            voucherId: r.voucherId?.toString(),
+            deliveryStatus: r.deliveryStatus,
+            deliveredAt: r.deliveredAt?.toISOString(),
+            deliveryError: r.deliveryError,
+          }))}
+        />
       </main>
     </div>
   );

@@ -7,10 +7,12 @@ export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ certificate?: string }>;
 };
 
-export default async function CheckoutPage({ params }: Props) {
+export default async function CheckoutPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const { certificate } = await searchParams;
   setRequestLocale(locale);
 
   const settings = await getSettings();
@@ -23,6 +25,7 @@ export default async function CheckoutPage({ params }: Props) {
           <CheckoutForm
             basePrice={settings.basePrice}
             vatPercent={settings.vatPercent}
+            preselectedCertificate={certificate}
           />
         </div>
       </main>

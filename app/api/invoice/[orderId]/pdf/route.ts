@@ -4,6 +4,8 @@ import { Order, Invoice } from "@/lib/models";
 import { getSettings } from "@/lib/pricing";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { InvoicePDF } from "@/components/invoice/invoice-pdf";
+import { generateZATCAQRData } from "@/lib/zatca-qr";
+import QRCode from "qrcode";
 
 export async function GET(
   req: NextRequest,
@@ -30,6 +32,26 @@ export async function GET(
 
     const settings = await getSettings();
 
+    // Generate ZATCA-compliant QR code
+    const zatcaQRData = generateZATCAQRData({
+      sellerName: settings.companyNameEn || "Cozeal Vouchers",
+      vatNumber: settings.companyVatNumber || "",
+      timestamp: order.paidAt || order.createdAt,
+      totalAmount: order.totalAmount,
+      vatAmount: order.vatAmount,
+    });
+
+    // Generate QR code as data URL
+    const qrCodeDataUrl = await QRCode.toDataURL(zatcaQRData, {
+      errorCorrectionLevel: "M", // ZATCA requires level M (15%)
+      width: 150,
+      margin: 1,
+      color: {
+        dark: "#000000",
+        light: "#ffffff",
+      },
+    });
+
     const pdfBuffer = await renderToBuffer(
       InvoicePDF({
         invoice: {
@@ -38,7 +60,7 @@ export async function GET(
         },
         order: {
           orderNumber: order.orderNumber,
-          universityName: order.universityName,
+          universityName: order.customerName,
           customerVatNumber: order.customerVatNumber,
           contactName: order.contactName,
           email: order.email,
@@ -57,6 +79,7 @@ export async function GET(
           vatNumber: settings.companyVatNumber,
           crNumber: settings.companyCrNumber,
         },
+        qrCode: qrCodeDataUrl,
       })
     );
 

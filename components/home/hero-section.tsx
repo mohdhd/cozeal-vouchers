@@ -4,7 +4,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Award, ArrowRight, ArrowLeft } from "lucide-react";
+import { Shield, Award, ArrowRight, ArrowLeft, Users, Building2 } from "lucide-react";
 
 export function HeroSection() {
   const t = useTranslations("hero");
@@ -45,8 +45,9 @@ export function HeroSection() {
           {/* CTA Buttons */}
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button asChild size="lg" className="gap-2 text-base">
-              <Link href="/checkout">
-                {t("cta")}
+              <Link href="/certificates">
+                <Users className="h-4 w-4" />
+                {t("browseVouchers")}
                 {isRTL ? (
                   <ArrowLeft className="h-4 w-4" />
                 ) : (
@@ -54,8 +55,11 @@ export function HeroSection() {
                 )}
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="text-base">
-              <a href="#features">{t("learnMore")}</a>
+            <Button asChild variant="outline" size="lg" className="gap-2 text-base">
+              <Link href="/institutions">
+                <Building2 className="h-4 w-4" />
+                {t("forInstitutions")}
+              </Link>
             </Button>
           </div>
 
@@ -63,7 +67,7 @@ export function HeroSection() {
           <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-muted-foreground">
             <div className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
-              <span className="text-sm">CompTIA Authorized</span>
+              <span className="text-sm">{t("trustBadge1")}</span>
             </div>
             <div className="flex items-center gap-2">
               <svg
@@ -79,7 +83,7 @@ export function HeroSection() {
                   d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                 />
               </svg>
-              <span className="text-sm">Secure Payments</span>
+              <span className="text-sm">{t("trustBadge2")}</span>
             </div>
             <div className="flex items-center gap-2">
               <svg
@@ -95,7 +99,7 @@ export function HeroSection() {
                   d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
                 />
               </svg>
-              <span className="text-sm">SAR Payments</span>
+              <span className="text-sm">{t("trustBadge3")}</span>
             </div>
           </div>
         </div>

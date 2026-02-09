@@ -28,7 +28,7 @@ export default async function SuccessPage({ params }: Props) {
   if (order.status === "PENDING" && order.tapChargeId) {
     try {
       const charge = await getTapCharge(order.tapChargeId);
-      
+
       if (isPaymentSuccessful(charge.status)) {
         // Payment was successful - update order
         await Order.updateOne(
@@ -64,7 +64,7 @@ export default async function SuccessPage({ params }: Props) {
           { _id: order._id },
           { status: "CANCELLED" }
         );
-        
+
         // Refresh order data
         order = await Order.findById(orderId);
       }
@@ -90,7 +90,7 @@ export default async function SuccessPage({ params }: Props) {
               id: order._id.toString(),
               orderNumber: order.orderNumber,
               status: order.status,
-              universityName: order.universityName,
+              universityName: order.customerName,
               contactName: order.contactName,
               email: order.email,
               quantity: order.quantity,

@@ -62,9 +62,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
-### Default Admin Credentials
-
-After running the seed script:
+### Default Admin CredentialsßAfter running the seed script:
 - **Email**: admin@cozeal.ai
 - **Password**: Cz@Admin#2026!Secure
 

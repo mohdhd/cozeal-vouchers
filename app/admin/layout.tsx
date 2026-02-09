@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { AdminProviders } from "@/components/admin/admin-providers";
 import "../globals.css";
 
 const inter = Inter({
@@ -22,7 +23,7 @@ export default function AdminLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
-        {children}
+        <AdminProviders>{children}</AdminProviders>
         <Toaster position="top-right" />
       </body>
     </html>

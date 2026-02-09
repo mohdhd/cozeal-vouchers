@@ -11,7 +11,7 @@ import { Plus } from "lucide-react";
 export default async function DiscountsPage() {
   const session = await auth();
 
-  if (!session) {
+  if (!session || session.user?.role !== "ADMIN") {
     redirect("/admin/login");
   }
 

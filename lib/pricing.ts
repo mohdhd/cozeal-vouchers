@@ -36,10 +36,11 @@ export async function getSettings(): Promise<{
 
 export async function calculatePricing(
   quantity: number,
-  discount?: DiscountInfo | null
+  discount?: DiscountInfo | null,
+  customBasePrice?: number | null
 ): Promise<PricingCalculation> {
   const settings = await getSettings();
-  const basePrice = settings.basePrice;
+  const basePrice = customBasePrice || settings.basePrice;
   const vatPercent = settings.vatPercent;
 
   const subtotal = basePrice * quantity;

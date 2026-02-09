@@ -6,6 +6,7 @@ import {
   View,
   StyleSheet,
   Font,
+  Image,
 } from "@react-pdf/renderer";
 
 // Register Arabic font from jsDelivr CDN (raw TTF files)
@@ -35,7 +36,8 @@ const successColor = "#059669";
 
 const styles = StyleSheet.create({
   page: {
-    padding: 50,
+    padding: 40,
+    paddingBottom: 30,
     fontSize: 10,
     fontFamily: "Helvetica",
     backgroundColor: "#ffffff",
@@ -49,7 +51,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 40,
+    marginBottom: 25,
   },
   logoSection: {
     flexDirection: "column",
@@ -111,13 +113,13 @@ const styles = StyleSheet.create({
   divider: {
     height: 2,
     backgroundColor: primaryColor,
-    marginBottom: 30,
+    marginBottom: 20,
   },
   // Info Section
   infoSection: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 30,
+    marginBottom: 20,
   },
   infoBox: {
     width: "48%",
@@ -145,13 +147,13 @@ const styles = StyleSheet.create({
   },
   // Table
   table: {
-    marginBottom: 30,
+    marginBottom: 15,
   },
   tableHeader: {
     flexDirection: "row",
     backgroundColor: darkColor,
-    paddingVertical: 12,
-    paddingHorizontal: 15,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
   },
   tableHeaderText: {
     color: "#ffffff",
@@ -162,8 +164,8 @@ const styles = StyleSheet.create({
   },
   tableRow: {
     flexDirection: "row",
-    paddingVertical: 15,
-    paddingHorizontal: 15,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#e2e8f0",
   },
@@ -192,8 +194,8 @@ const styles = StyleSheet.create({
   totalRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 8,
-    paddingHorizontal: 15,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
   },
   totalRowBorder: {
     borderBottomWidth: 1,
@@ -218,9 +220,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     backgroundColor: primaryColor,
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    marginTop: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginTop: 4,
     borderRadius: 4,
   },
   grandTotalLabel: {
@@ -235,26 +237,50 @@ const styles = StyleSheet.create({
   },
   // Footer
   footer: {
-    position: "absolute",
-    bottom: 40,
-    left: 50,
-    right: 50,
-    paddingTop: 20,
+    marginTop: "auto",
+    paddingTop: 15,
     borderTopWidth: 1,
     borderTopColor: "#e2e8f0",
   },
+  footerContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  footerLeft: {
+    flex: 1,
+  },
   footerText: {
-    fontSize: 9,
+    fontSize: 8,
     color: grayColor,
-    textAlign: "center",
-    marginBottom: 3,
+    marginBottom: 2,
   },
   footerThankYou: {
-    fontSize: 10,
+    fontSize: 9,
     color: darkColor,
-    textAlign: "center",
-    marginTop: 10,
+    marginTop: 6,
     fontWeight: 700,
+  },
+  // QR Code Section (integrated with footer)
+  qrCodeContainer: {
+    alignItems: "center",
+    marginLeft: 20,
+  },
+  qrCode: {
+    width: 70,
+    height: 70,
+  },
+  qrLabel: {
+    fontSize: 6,
+    color: grayColor,
+    marginTop: 3,
+    textAlign: "center",
+  },
+  zatcaNotice: {
+    fontSize: 7,
+    color: grayColor,
+    lineHeight: 1.3,
+    marginTop: 2,
   },
 });
 
@@ -284,6 +310,7 @@ interface InvoicePDFProps {
     vatNumber: string;
     crNumber: string;
   };
+  qrCode?: string; // ZATCA-compliant QR code data URL
 }
 
 // Helper to detect if text contains Arabic characters
@@ -310,7 +337,7 @@ function SmartText({ children, style, ...props }: { children: string; style?: an
   );
 }
 
-export function InvoicePDF({ invoice, order, company }: InvoicePDFProps) {
+export function InvoicePDF({ invoice, order, company, qrCode }: InvoicePDFProps) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       minimumFractionDigits: 2,
@@ -459,21 +486,37 @@ export function InvoicePDF({ invoice, order, company }: InvoicePDFProps) {
           </View>
         </View>
 
-        {/* Footer */}
+        {/* Footer with QR Code */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            {company.nameEn} • Official CompTIA Authorized Partner
-          </Text>
-          <Text style={styles.footerText}>
-            7290 Muhammad Nur Jakhdar, Alsafa, Jeddah 23453 3592, Saudi Arabia
-          </Text>
-          <Text style={styles.footerText}>
-            Email: info@cozeal.ai • CR: 7051993926
-            {company.vatNumber ? ` • VAT: ${company.vatNumber}` : ""}
-          </Text>
-          <Text style={styles.footerThankYou}>
-            Thank you for your business!
-          </Text>
+          <View style={styles.footerContent}>
+            <View style={styles.footerLeft}>
+              <Text style={styles.footerText}>
+                {company.nameEn} • Official CompTIA Authorized Partner
+              </Text>
+              <Text style={styles.footerText}>
+                7290 Muhammad Nur Jakhdar, Alsafa, Jeddah 23453 3592, Saudi Arabia
+              </Text>
+              <Text style={styles.footerText}>
+                Email: info@cozeal.ai • CR: 7051993926
+                {company.vatNumber ? ` • VAT: ${company.vatNumber}` : ""}
+              </Text>
+              <Text style={styles.zatcaNotice}>
+                ZATCA Compliant E-Invoice | Scan QR to verify
+              </Text>
+              <Text style={[styles.zatcaNotice, styles.arabicText]}>
+                فاتورة إلكترونية متوافقة مع هيئة الزكاة والضريبة والجمارك
+              </Text>
+              <Text style={styles.footerThankYou}>
+                Thank you for your business!
+              </Text>
+            </View>
+            {qrCode && (
+              <View style={styles.qrCodeContainer}>
+                <Image style={styles.qrCode} src={qrCode} />
+                <Text style={styles.qrLabel}>ZATCA QR</Text>
+              </View>
+            )}
+          </View>
         </View>
       </Page>
     </Document>

@@ -20,18 +20,18 @@ export function PricingSection({ basePrice, vatPercent }: PricingSectionProps) {
     "Official CompTIA voucher",
     "Valid for 12 months",
     "One exam attempt",
-    "Fast delivery after payment",
+    "Delivery within 5-10 business days",
     "Arabic & English support",
-    "University invoice included",
+    "Invoice included",
   ];
 
   const featuresAr = [
     "قسيمة CompTIA رسمية",
     "صالحة لمدة 12 شهر",
     "محاولة امتحان واحدة",
-    "تسليم سريع بعد الدفع",
+    "التسليم خلال 5-10 أيام عمل",
     "دعم بالعربية والإنجليزية",
-    "فاتورة جامعية مضمنة",
+    "فاتورة مضمنة",
   ];
 
   const displayFeatures = isRTL ? featuresAr : features;

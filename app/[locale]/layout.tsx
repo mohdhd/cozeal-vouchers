@@ -5,6 +5,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Toaster } from "@/components/ui/sonner";
+import { Providers } from "@/components/providers";
 import "../globals.css";
 
 const inter = Inter({
@@ -57,10 +58,12 @@ export default async function LocaleLayout({ children, params }: Props) {
           isRTL ? "font-cairo" : "font-sans"
         } antialiased min-h-screen bg-background`}
       >
-        <NextIntlClientProvider messages={messages}>
-          {children}
-          <Toaster position={isRTL ? "top-left" : "top-right"} />
-        </NextIntlClientProvider>
+        <Providers>
+          <NextIntlClientProvider messages={messages}>
+            {children}
+            <Toaster position={isRTL ? "top-left" : "top-right"} />
+          </NextIntlClientProvider>
+        </Providers>
       </body>
     </html>
   );

@@ -6,7 +6,7 @@ import { DiscountForm } from "@/components/admin/discount-form";
 export default async function NewDiscountPage() {
   const session = await auth();
 
-  if (!session) {
+  if (!session || session.user?.role !== "ADMIN") {
     redirect("/admin/login");
   }
 

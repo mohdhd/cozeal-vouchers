@@ -8,7 +8,7 @@ import { OrdersTable } from "@/components/admin/orders-table";
 export default async function OrdersPage() {
   const session = await auth();
 
-  if (!session) {
+  if (!session || session.user?.role !== "ADMIN") {
     redirect("/admin/login");
   }
 
@@ -28,7 +28,7 @@ export default async function OrdersPage() {
           orders={orders.map((order) => ({
             id: order._id.toString(),
             orderNumber: order.orderNumber,
-            universityName: order.universityName,
+            universityName: order.customerName,
             contactName: order.contactName,
             email: order.email,
             phone: order.phone,

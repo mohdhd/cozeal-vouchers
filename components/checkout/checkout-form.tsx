@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
+import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,8 +11,15 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Form,
   FormControl,
@@ -32,11 +40,35 @@ import {
   User,
   Mail,
   Phone,
+  ShoppingCart,
+  Award,
+  Users,
+  FileSpreadsheet,
 } from "lucide-react";
 import { calculatePricingClient, type DiscountInfo } from "@/lib/pricing-client";
+import { ExcelUpload, type StudentData } from "@/components/checkout/excel-upload";
+
+type DeliveryMethod = "BULK_TO_CONTACT" | "DIRECT_TO_STUDENTS";
+
+interface Certificate {
+  _id: string;
+  code: string;
+  slug: string;
+  nameEn: string;
+  nameAr: string;
+  retailPrice: number;
+  institutionBasePrice: number;
+}
+
+interface InstitutionDiscount {
+  institutionId: string;
+  institutionName: string;
+  discountType: "PERCENTAGE" | "FIXED";
+  discountValue: number;
+}
 
 const checkoutSchema = z.object({
-  universityName: z.string().min(2, "University name is required"),
+  customerName: z.string().min(2, "Name is required"),
   customerVatNumber: z.string().optional(),
   contactName: z.string().min(2, "Contact name is required"),
   email: z.string().email("Please enter a valid email address"),
@@ -48,42 +80,137 @@ type CheckoutFormData = z.infer<typeof checkoutSchema>;
 interface CheckoutFormProps {
   basePrice: number;
   vatPercent: number;
+  preselectedCertificate?: string;
 }
 
-export function CheckoutForm({ basePrice, vatPercent }: CheckoutFormProps) {
+export function CheckoutForm({ basePrice, vatPercent, preselectedCertificate }: CheckoutFormProps) {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
+  const { data: session } = useSession();
   const isRTL = locale === "ar";
 
-  const [quantity, setQuantity] = useState(10);
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
+  const [selectedCertificate, setSelectedCertificate] = useState<Certificate | null>(null);
+  const [loadingCertificates, setLoadingCertificates] = useState(true);
+  const [quantity, setQuantity] = useState(1);
   const [discountCode, setDiscountCode] = useState("");
-  const [appliedDiscount, setAppliedDiscount] = useState<DiscountInfo | null>(
-    null
-  );
+  const [appliedDiscount, setAppliedDiscount] = useState<DiscountInfo | null>(null);
   const [discountError, setDiscountError] = useState<string | null>(null);
   const [isValidatingCode, setIsValidatingCode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [institutionDiscount, setInstitutionDiscount] = useState<InstitutionDiscount | null>(null);
+
+  // Institution delivery method state
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("BULK_TO_CONTACT");
+  const [studentRecipients, setStudentRecipients] = useState<StudentData[]>([]);
+
+  // Check if user is institution contact
+  const isInstitutionUser = session?.user?.role === "INSTITUTION_CONTACT" && session?.user?.institutionId;
 
   const form = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      universityName: "",
+      customerName: session?.user?.name || "",
       customerVatNumber: "",
-      contactName: "",
-      email: "",
+      contactName: session?.user?.name || "",
+      email: session?.user?.email || "",
       phone: "",
     },
   });
 
-  const pricing = calculatePricingClient(
-    quantity,
-    basePrice,
-    vatPercent,
-    appliedDiscount
-  );
+  // Update form when session loads
+  useEffect(() => {
+    if (session?.user) {
+      form.setValue("customerName", session.user.name || "");
+      form.setValue("contactName", session.user.name || "");
+      form.setValue("email", session.user.email || "");
+      if (session.user.phone) {
+        form.setValue("phone", session.user.phone);
+      }
+    }
+  }, [session, form]);
 
-  // Format currency with Latin numerals always
+  // Fetch institution discount if user is institution contact
+  useEffect(() => {
+    const fetchInstitutionDiscount = async () => {
+      if (!isInstitutionUser || !session?.user?.institutionId) return;
+
+      try {
+        const res = await fetch(`/api/institutions/${session.user.institutionId}`);
+        const data = await res.json();
+        if (data.success && data.institution) {
+          const inst = data.institution;
+          if (inst.discountType && inst.discountValue) {
+            setInstitutionDiscount({
+              institutionId: inst._id,
+              institutionName: locale === "ar" ? inst.nameAr : inst.nameEn,
+              discountType: inst.discountType,
+              discountValue: inst.discountValue,
+            });
+            // Pre-fill institution name
+            form.setValue("customerName", locale === "ar" ? inst.nameAr : inst.nameEn);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch institution:", error);
+      }
+    };
+
+    fetchInstitutionDiscount();
+  }, [isInstitutionUser, session?.user?.institutionId, locale, form]);
+
+  // Fetch certificates
+  useEffect(() => {
+    const fetchCertificates = async () => {
+      try {
+        const res = await fetch("/api/certificates");
+        const data = await res.json();
+        if (data.success) {
+          setCertificates(data.certificates);
+          // Preselect certificate if provided
+          if (preselectedCertificate) {
+            const cert = data.certificates.find(
+              (c: Certificate) => c.slug === preselectedCertificate || c._id === preselectedCertificate
+            );
+            if (cert) setSelectedCertificate(cert);
+          } else if (data.certificates.length === 1) {
+            setSelectedCertificate(data.certificates[0]);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch certificates:", error);
+      } finally {
+        setLoadingCertificates(false);
+      }
+    };
+    fetchCertificates();
+  }, [preselectedCertificate]);
+
+  // Calculate current price - use institution price if applicable
+  const getBasePrice = () => {
+    if (!selectedCertificate) return basePrice;
+    // Use institution base price for institution users, retail price for others
+    return isInstitutionUser ? selectedCertificate.institutionBasePrice : selectedCertificate.retailPrice;
+  };
+
+  // Calculate institution discount if applicable
+  const getInstitutionDiscountInfo = (): DiscountInfo | null => {
+    if (!isInstitutionUser || !institutionDiscount) return null;
+    return {
+      code: `INST-${institutionDiscount.institutionId}`,
+      type: institutionDiscount.discountType,
+      value: institutionDiscount.discountValue,
+      descriptionEn: `${institutionDiscount.institutionName} Discount`,
+      descriptionAr: `خصم ${institutionDiscount.institutionName}`,
+    };
+  };
+
+  const currentPrice = getBasePrice();
+  // Apply institution discount OR manual discount code (institution discount takes precedence)
+  const effectiveDiscount = isInstitutionUser && institutionDiscount ? getInstitutionDiscountInfo() : appliedDiscount;
+  const pricing = calculatePricingClient(quantity, currentPrice, vatPercent, effectiveDiscount);
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "decimal",
@@ -105,7 +232,7 @@ export function CheckoutForm({ basePrice, vatPercent }: CheckoutFormProps) {
         body: JSON.stringify({
           code: discountCode,
           quantity,
-          universityName: form.getValues("universityName"),
+          universityName: form.getValues("customerName"),
         }),
       });
 
@@ -114,9 +241,7 @@ export function CheckoutForm({ basePrice, vatPercent }: CheckoutFormProps) {
       if (result.valid) {
         setAppliedDiscount(result.discount);
         setDiscountError(null);
-        toast.success(
-          isRTL ? "تم تطبيق كود الخصم بنجاح" : "Discount code applied successfully"
-        );
+        toast.success(isRTL ? "تم تطبيق كود الخصم بنجاح" : "Discount code applied successfully");
       } else {
         setDiscountError(isRTL ? result.error.ar : result.error.en);
         setAppliedDiscount(null);
@@ -135,6 +260,17 @@ export function CheckoutForm({ basePrice, vatPercent }: CheckoutFormProps) {
   };
 
   const onSubmit = async (data: CheckoutFormData) => {
+    if (!selectedCertificate) {
+      toast.error(isRTL ? "يرجى اختيار شهادة" : "Please select a certificate");
+      return;
+    }
+
+    // Validate student list for DIRECT_TO_STUDENTS delivery
+    if (isInstitutionUser && deliveryMethod === "DIRECT_TO_STUDENTS" && studentRecipients.length === 0) {
+      toast.error(isRTL ? "يرجى تحميل ملف Excel بمعلومات الطلاب" : "Please upload an Excel file with student information");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -142,17 +278,26 @@ export function CheckoutForm({ basePrice, vatPercent }: CheckoutFormProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...data,
+          customerName: data.customerName,
+          customerVatNumber: data.customerVatNumber,
+          contactName: data.contactName,
+          email: data.email,
+          phone: data.phone,
           quantity,
+          certificateId: selectedCertificate._id,
           discountCode: appliedDiscount?.code || null,
           locale,
+          // Institution-specific fields
+          ...(isInstitutionUser && {
+            deliveryMethod,
+            studentRecipients: deliveryMethod === "DIRECT_TO_STUDENTS" ? studentRecipients : [],
+          }),
         }),
       });
 
       const result = await response.json();
 
       if (result.redirectUrl) {
-        // Redirect to Tap payment page
         window.location.href = result.redirectUrl;
       } else {
         toast.error(t("errors.paymentFailed"));
@@ -170,29 +315,89 @@ export function CheckoutForm({ basePrice, vatPercent }: CheckoutFormProps) {
         {t("checkout.title")}
       </h1>
 
+      {/* Institution Pricing Banner */}
+      {isInstitutionUser && institutionDiscount && (
+        <div className="mb-6 rounded-lg border border-primary/30 bg-primary/5 p-4">
+          <div className="flex items-center gap-3">
+            <Building2 className="h-5 w-5 text-primary" />
+            <div>
+              <p className="font-semibold text-primary">
+                {isRTL ? "تسعير المؤسسات" : "Institution Pricing"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {isRTL
+                  ? `أنت تحصل على أسعار مخفضة خاصة بـ ${institutionDiscount.institutionName}`
+                  : `You're getting special discounted pricing for ${institutionDiscount.institutionName}`}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-8 lg:grid-cols-5">
         {/* Form Section */}
         <div className="lg:col-span-3">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* University Information */}
+              {/* Certificate Selection */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Award className="h-5 w-5 text-primary" />
+                    {t("checkout.selectCertificate")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {loadingCertificates ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : (
+                    <Select
+                      value={selectedCertificate?._id || ""}
+                      onValueChange={(value) => {
+                        const cert = certificates.find((c) => c._id === value);
+                        setSelectedCertificate(cert || null);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("checkout.selectCertificatePlaceholder")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {certificates.map((cert) => (
+                          <SelectItem key={cert._id} value={cert._id}>
+                            <div className="flex items-center justify-between gap-4">
+                              <span>{isRTL ? cert.nameAr : cert.nameEn}</span>
+                              <span className="text-muted-foreground">
+                                {formatCurrency(isInstitutionUser ? cert.institutionBasePrice : cert.retailPrice)} {t("common.sar")}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Customer Information */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Building2 className="h-5 w-5 text-primary" />
-                    {t("checkout.universityInfo")}
+                    {t("checkout.customerInfo")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <FormField
                     control={form.control}
-                    name="universityName"
+                    name="customerName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("checkout.universityName")}</FormLabel>
+                        <FormLabel>{t("checkout.customerName")}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder={t("checkout.universityNamePlaceholder")}
+                            placeholder={t("checkout.customerNamePlaceholder")}
                             {...field}
                           />
                         </FormControl>
@@ -299,7 +504,7 @@ export function CheckoutForm({ basePrice, vatPercent }: CheckoutFormProps) {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
-                    <Tag className="h-5 w-5 text-primary" />
+                    <ShoppingCart className="h-5 w-5 text-primary" />
                     {t("checkout.orderDetails")}
                   </CardTitle>
                 </CardHeader>
@@ -343,10 +548,30 @@ export function CheckoutForm({ basePrice, vatPercent }: CheckoutFormProps) {
 
                   <Separator />
 
-                  {/* Discount Code */}
+                  {/* Discount Code / Institution Discount */}
                   <div>
                     <Label className="mb-3 block">{t("checkout.discountCode")}</Label>
-                    {appliedDiscount ? (
+                    {/* Institution Discount - Auto-applied */}
+                    {isInstitutionUser && institutionDiscount ? (
+                      <div className="flex items-center justify-between rounded-lg border border-primary/50 bg-primary/10 p-4">
+                        <div className="flex items-center gap-3">
+                          <CheckCircle2 className="h-5 w-5 text-primary" />
+                          <div>
+                            <p className="font-semibold text-primary">
+                              {isRTL ? "خصم المؤسسة" : "Institution Discount"}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {institutionDiscount.discountType === "PERCENTAGE"
+                                ? `${institutionDiscount.discountValue}% ${isRTL ? "خصم" : "off"}`
+                                : `${formatCurrency(institutionDiscount.discountValue)} ${t("common.sar")} ${isRTL ? "خصم" : "off"}`}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {isRTL ? "يُطبق تلقائياً" : "Auto-applied"}
+                        </span>
+                      </div>
+                    ) : appliedDiscount ? (
                       <div className="flex items-center justify-between rounded-lg border border-secondary/50 bg-secondary/10 p-4">
                         <div className="flex items-center gap-3">
                           <CheckCircle2 className="h-5 w-5 text-secondary" />
@@ -397,9 +622,7 @@ export function CheckoutForm({ basePrice, vatPercent }: CheckoutFormProps) {
                           </Button>
                         </div>
                         {discountError && (
-                          <p className="text-sm text-destructive">
-                            {discountError}
-                          </p>
+                          <p className="text-sm text-destructive">{discountError}</p>
                         )}
                       </div>
                     )}
@@ -407,13 +630,134 @@ export function CheckoutForm({ basePrice, vatPercent }: CheckoutFormProps) {
                 </CardContent>
               </Card>
 
+              {/* Voucher Delivery Method - Only for Institution Users */}
+              {isInstitutionUser && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Users className="h-5 w-5 text-primary" />
+                      {isRTL ? "طريقة توزيع القسائم" : "Voucher Distribution Method"}
+                    </CardTitle>
+                    <CardDescription>
+                      {isRTL
+                        ? "اختر كيف تريد أن يتم توزيع القسائم"
+                        : "Choose how you want the vouchers to be distributed"}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Option 1: Bulk to Contact */}
+                    <div
+                      onClick={() => {
+                        setDeliveryMethod("BULK_TO_CONTACT");
+                        setStudentRecipients([]);
+                      }}
+                      className={`
+                        cursor-pointer rounded-lg border-2 p-4 transition-all
+                        ${deliveryMethod === "BULK_TO_CONTACT"
+                          ? "border-primary bg-primary/5"
+                          : "border-muted hover:border-muted-foreground/50"}
+                      `}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`
+                          mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center
+                          ${deliveryMethod === "BULK_TO_CONTACT"
+                            ? "border-primary bg-primary"
+                            : "border-muted-foreground"}
+                        `}>
+                          {deliveryMethod === "BULK_TO_CONTACT" && (
+                            <div className="h-2 w-2 rounded-full bg-white" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-primary" />
+                            <p className="font-medium">
+                              {isRTL ? "إرسال جميع القسائم إلى بريدي" : "Send all vouchers to my email"}
+                            </p>
+                          </div>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {isRTL
+                              ? "سنرسل جميع القسائم إلى بريدك الإلكتروني وستقوم أنت بتوزيعها على الطلاب"
+                              : "We'll send all vouchers to your email and you'll distribute them to students yourself"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Option 2: Direct to Students */}
+                    <div
+                      onClick={() => setDeliveryMethod("DIRECT_TO_STUDENTS")}
+                      className={`
+                        cursor-pointer rounded-lg border-2 p-4 transition-all
+                        ${deliveryMethod === "DIRECT_TO_STUDENTS"
+                          ? "border-primary bg-primary/5"
+                          : "border-muted hover:border-muted-foreground/50"}
+                      `}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`
+                          mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center
+                          ${deliveryMethod === "DIRECT_TO_STUDENTS"
+                            ? "border-primary bg-primary"
+                            : "border-muted-foreground"}
+                        `}>
+                          {deliveryMethod === "DIRECT_TO_STUDENTS" && (
+                            <div className="h-2 w-2 rounded-full bg-white" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <FileSpreadsheet className="h-4 w-4 text-primary" />
+                            <p className="font-medium">
+                              {isRTL ? "إرسال القسائم مباشرة للطلاب" : "Send vouchers directly to students"}
+                            </p>
+                          </div>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {isRTL
+                              ? "قم بتحميل ملف Excel بمعلومات الطلاب وسنرسل لكل طالب قسيمته"
+                              : "Upload an Excel file with student info and we'll send each student their voucher"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Excel Upload - Only shown when DIRECT_TO_STUDENTS is selected */}
+                    {deliveryMethod === "DIRECT_TO_STUDENTS" && (
+                      <div className="pt-2">
+                        <ExcelUpload
+                          students={studentRecipients}
+                          onStudentsChange={(students) => {
+                            setStudentRecipients(students);
+                            // Update quantity to match student count
+                            if (students.length > 0) {
+                              setQuantity(students.length);
+                            }
+                          }}
+                          disabled={isSubmitting}
+                        />
+
+                        {studentRecipients.length > 0 && (
+                          <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                            {isRTL
+                              ? `سيتم إرسال ${studentRecipients.length} قسيمة مباشرة للطلاب`
+                              : `${studentRecipients.length} vouchers will be sent directly to students`}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Submit Button (Mobile) */}
               <div className="lg:hidden">
                 <Button
                   type="submit"
                   size="lg"
                   className="w-full gap-2"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !selectedCertificate}
                 >
                   {isSubmitting ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -435,11 +779,25 @@ export function CheckoutForm({ basePrice, vatPercent }: CheckoutFormProps) {
                 <CardTitle>{t("checkout.orderSummary")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Selected Certificate */}
+                {selectedCertificate && (
+                  <div className="rounded-lg bg-muted/50 p-4">
+                    <p className="font-medium">
+                      {isRTL ? selectedCertificate.nameAr : selectedCertificate.nameEn}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {selectedCertificate.code}
+                    </p>
+                  </div>
+                )}
+
                 {/* Line Items */}
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
-                      CompTIA Security+ × {quantity}
+                      {selectedCertificate
+                        ? `${isRTL ? selectedCertificate.nameAr : selectedCertificate.nameEn} × ${quantity}`
+                        : `${t("checkout.vouchers")} × ${quantity}`}
                     </span>
                     <span dir="ltr">
                       {formatCurrency(pricing.subtotal)} {t("common.sar")}
@@ -478,8 +836,7 @@ export function CheckoutForm({ basePrice, vatPercent }: CheckoutFormProps) {
 
                 {pricing.discountAmount > 0 && (
                   <p className="text-center text-sm text-secondary">
-                    🎉 {t("checkout.savings")} {formatCurrency(pricing.discountAmount)}{" "}
-                    {t("common.sar")}!
+                    {t("checkout.savings")} {formatCurrency(pricing.discountAmount)} {t("common.sar")}!
                   </p>
                 )}
 
@@ -489,7 +846,7 @@ export function CheckoutForm({ basePrice, vatPercent }: CheckoutFormProps) {
                     type="submit"
                     size="lg"
                     className="w-full gap-2"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !selectedCertificate}
                     onClick={form.handleSubmit(onSubmit)}
                   >
                     {isSubmitting ? (

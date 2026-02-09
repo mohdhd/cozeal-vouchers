@@ -2,16 +2,25 @@
 
 import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { useSession, signOut } from "next-auth/react";
 import { Link } from "@/i18n/navigation";
 import { LanguageSwitcher } from "./language-switcher";
-import { Shield, Menu, X } from "lucide-react";
+import { Shield, Menu, X, User, Building2, LogIn, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Header() {
   const t = useTranslations("nav");
   const locale = useLocale();
   const isRTL = locale === "ar";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { data: session } = useSession();
 
   const toggleMenu = () => setMobileMenuOpen(!mobileMenuOpen);
   const closeMenu = () => setMobileMenuOpen(false);
@@ -36,11 +45,51 @@ export function Header() {
             {t("home")}
           </Link>
           <Link
-            href="/checkout"
+            href="/certificates"
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
-            {t("checkout")}
+            {t("certificates")}
           </Link>
+          <Link
+            href="/institutions"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {t("forInstitutions")}
+          </Link>
+          
+          {session?.user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <User className="h-4 w-4" />
+                  {session.user.name?.split(" ")[0]}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href={session.user.role === "INSTITUTION_CONTACT" ? "/institutions/dashboard" : "/account"}>
+                    {t("dashboard")}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  {t("signOut")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link href="/login">
+              <Button variant="outline" size="sm" className="gap-2">
+                <LogIn className="h-4 w-4" />
+                {t("signIn")}
+              </Button>
+            </Link>
+          )}
+          
           <LanguageSwitcher />
         </nav>
 
@@ -89,12 +138,48 @@ export function Header() {
             {t("home")}
           </Link>
           <Link
-            href="/checkout"
+            href="/certificates"
             className="border-b border-border py-4 text-lg font-medium text-foreground transition-colors hover:text-primary"
             onClick={closeMenu}
           >
-            {t("checkout")}
+            {t("certificates")}
           </Link>
+          <Link
+            href="/institutions"
+            className="border-b border-border py-4 text-lg font-medium text-foreground transition-colors hover:text-primary"
+            onClick={closeMenu}
+          >
+            {t("forInstitutions")}
+          </Link>
+          {session?.user ? (
+            <>
+              <Link
+                href={session.user.role === "INSTITUTION_CONTACT" ? "/institutions/dashboard" : "/account"}
+                className="border-b border-border py-4 text-lg font-medium text-foreground transition-colors hover:text-primary"
+                onClick={closeMenu}
+              >
+                {t("dashboard")}
+              </Link>
+              <button
+                onClick={() => {
+                  closeMenu();
+                  signOut({ callbackUrl: "/" });
+                }}
+                className="border-b border-border py-4 text-lg font-medium text-foreground transition-colors hover:text-primary text-left flex items-center gap-2"
+              >
+                <LogOut className="h-5 w-5" />
+                {t("signOut")}
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/login"
+              className="border-b border-border py-4 text-lg font-medium text-foreground transition-colors hover:text-primary"
+              onClick={closeMenu}
+            >
+              {t("signIn")}
+            </Link>
+          )}
           <div className="mt-6">
             <LanguageSwitcher />
           </div>

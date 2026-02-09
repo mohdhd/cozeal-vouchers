@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations, useLocale } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { Shield, Mail, MapPin, Building2 } from "lucide-react";
 
 export function Footer() {
@@ -8,11 +9,24 @@ export function Footer() {
   const locale = useLocale();
   const isRTL = locale === "ar";
 
+  const legalLinks = [
+    { href: "/legal/terms-of-service", labelEn: "Terms of Service", labelAr: "الشروط والأحكام" },
+    { href: "/legal/terms-of-sale", labelEn: "Terms of Sale", labelAr: "شروط البيع" },
+    { href: "/legal/privacy-policy", labelEn: "Privacy Policy", labelAr: "سياسة الخصوصية" },
+    { href: "/legal/refund-policy", labelEn: "Refund Policy", labelAr: "سياسة الاسترداد" },
+  ];
+
+  const quickLinks = [
+    { href: "/certificates", labelEn: "Certificates", labelAr: "الشهادات" },
+    { href: "/institutions", labelEn: "For Institutions", labelAr: "للمؤسسات" },
+    { href: "/login", labelEn: "Sign In", labelAr: "تسجيل الدخول" },
+  ];
+
   return (
     <footer className="border-t border-border bg-muted/30">
       <div className="container mx-auto px-4 py-10">
         {/* Main Footer Content */}
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-4">
           {/* Logo & Company */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
@@ -24,6 +38,44 @@ export function Footer() {
             <p className="text-sm text-muted-foreground">
               {t("hero.badge")}
             </p>
+          </div>
+
+          {/* Quick Links */}
+          <div className="space-y-3">
+            <h4 className="font-semibold text-foreground">
+              {isRTL ? "روابط سريعة" : "Quick Links"}
+            </h4>
+            <ul className="space-y-2 text-sm">
+              {quickLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {isRTL ? link.labelAr : link.labelEn}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Legal Links */}
+          <div className="space-y-3">
+            <h4 className="font-semibold text-foreground">
+              {isRTL ? "القانونية" : "Legal"}
+            </h4>
+            <ul className="space-y-2 text-sm">
+              {legalLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {isRTL ? link.labelAr : link.labelEn}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
 
           {/* Contact Info */}
@@ -46,15 +98,6 @@ export function Footer() {
                   Jeddah 23453 3592, Saudi Arabia
                 </span>
               </div>
-            </div>
-          </div>
-
-          {/* Company Registration */}
-          <div className="space-y-3">
-            <h4 className="font-semibold text-foreground">
-              {isRTL ? "معلومات الشركة" : "Company Info"}
-            </h4>
-            <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Building2 className="h-4 w-4" />
                 <span>
