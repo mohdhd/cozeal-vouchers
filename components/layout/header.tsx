@@ -56,7 +56,7 @@ export function Header() {
           >
             {t("forInstitutions")}
           </Link>
-          
+
           {session?.user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -67,9 +67,15 @@ export function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
-                  <Link href={session.user.role === "INSTITUTION_CONTACT" ? "/institutions/dashboard" : "/account"}>
-                    {t("dashboard")}
-                  </Link>
+                  {session.user.role === "ADMIN" ? (
+                    <a href="/admin">
+                      {t("dashboard")}
+                    </a>
+                  ) : (
+                    <Link href={session.user.role === "INSTITUTION_CONTACT" ? "/institutions/dashboard" : "/account"}>
+                      {t("dashboard")}
+                    </Link>
+                  )}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -89,7 +95,7 @@ export function Header() {
               </Button>
             </Link>
           )}
-          
+
           <LanguageSwitcher />
         </nav>
 
@@ -111,7 +117,7 @@ export function Header() {
 
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 top-16 z-40 bg-black/50 md:hidden"
           onClick={closeMenu}
         />
@@ -119,15 +125,13 @@ export function Header() {
 
       {/* Mobile Menu Panel */}
       <div
-        className={`fixed top-16 z-50 h-[calc(100vh-4rem)] w-72 transform bg-background shadow-xl transition-transform duration-300 ease-in-out md:hidden ${
-          isRTL ? "left-0" : "right-0"
-        } ${
-          mobileMenuOpen
+        className={`fixed top-16 z-50 h-[calc(100vh-4rem)] w-72 transform bg-background shadow-xl transition-transform duration-300 ease-in-out md:hidden ${isRTL ? "left-0" : "right-0"
+          } ${mobileMenuOpen
             ? "translate-x-0"
             : isRTL
-            ? "-translate-x-full"
-            : "translate-x-full"
-        }`}
+              ? "-translate-x-full"
+              : "translate-x-full"
+          }`}
       >
         <nav className="flex flex-col p-6">
           <Link
@@ -153,13 +157,23 @@ export function Header() {
           </Link>
           {session?.user ? (
             <>
-              <Link
-                href={session.user.role === "INSTITUTION_CONTACT" ? "/institutions/dashboard" : "/account"}
-                className="border-b border-border py-4 text-lg font-medium text-foreground transition-colors hover:text-primary"
-                onClick={closeMenu}
-              >
-                {t("dashboard")}
-              </Link>
+              {session.user.role === "ADMIN" ? (
+                <a
+                  href="/admin"
+                  className="border-b border-border py-4 text-lg font-medium text-foreground transition-colors hover:text-primary"
+                  onClick={closeMenu}
+                >
+                  {t("dashboard")}
+                </a>
+              ) : (
+                <Link
+                  href={session.user.role === "INSTITUTION_CONTACT" ? "/institutions/dashboard" : "/account"}
+                  className="border-b border-border py-4 text-lg font-medium text-foreground transition-colors hover:text-primary"
+                  onClick={closeMenu}
+                >
+                  {t("dashboard")}
+                </Link>
+              )}
               <button
                 onClick={() => {
                   closeMenu();

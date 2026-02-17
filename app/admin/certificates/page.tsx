@@ -41,6 +41,7 @@ import {
   Eye,
   Pencil,
   GripVertical,
+  Trash2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -95,6 +96,8 @@ export default function AdminCertificatesPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<Certificate>>({});
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [certToDelete, setCertToDelete] = useState<Certificate | null>(null);
 
   const fetchCertificates = async () => {
     setLoading(true);
@@ -168,6 +171,26 @@ export default function AdminCertificatesPage() {
     setIsEditDialogOpen(true);
   };
 
+  const handleDelete = async () => {
+    if (!certToDelete) return;
+    setActionLoading(true);
+    try {
+      const res = await fetch(`/api/admin/certificates/${certToDelete._id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete certificate");
+      toast.success(data.message || "Certificate deleted");
+      setIsDeleteDialogOpen(false);
+      setCertToDelete(null);
+      fetchCertificates();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete certificate");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const openAddDialog = () => {
     setSelectedCert(null);
     setFormData({
@@ -189,12 +212,13 @@ export default function AdminCertificatesPage() {
 
   const filteredCertificates = certificates.filter(
     (cert) =>
-      cert.nameEn.toLowerCase().includes(search.toLowerCase()) ||
-      cert.code.toLowerCase().includes(search.toLowerCase()) ||
-      cert.examCode.toLowerCase().includes(search.toLowerCase())
+      (cert.nameEn || "").toLowerCase().includes(search.toLowerCase()) ||
+      (cert.code || "").toLowerCase().includes(search.toLowerCase()) ||
+      (cert.examCode || "").toLowerCase().includes(search.toLowerCase())
   );
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | null | undefined) => {
+    if (amount == null) return "0 SAR";
     return amount.toLocaleString() + " SAR";
   };
 
@@ -314,6 +338,16 @@ export default function AdminCertificatesPage() {
                               <DropdownMenuItem onClick={() => openEditDialog(cert)}>
                                 <Pencil className="h-4 w-4 mr-2" />
                                 Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-red-600 focus:text-red-600"
+                                onClick={() => {
+                                  setCertToDelete(cert);
+                                  setIsDeleteDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -502,6 +536,32 @@ export default function AdminCertificatesPage() {
             <Button onClick={handleSave} disabled={actionLoading}>
               {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Certificate</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete <strong>{certToDelete?.nameEn}</strong>?
+              This action cannot be undone. If the certificate has available vouchers, it will be deactivated instead.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={actionLoading}
+            >
+              {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,64 +1,74 @@
 import nodemailer from "nodemailer";
 
-// Email configuration using Google Workspace SMTP
-const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || "smtp.gmail.com",
-    port: parseInt(process.env.SMTP_PORT || "587"),
-    secure: process.env.SMTP_SECURE === "true", // true for 465, false for other ports
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
-});
+// Email configuration using Google Workspace SMTP Relay
+// When server IP is whitelisted in Google Workspace, no auth is needed
+const smtpConfig: any = {
+  host: process.env.SMTP_HOST || "smtp-relay.gmail.com",
+  port: parseInt(process.env.SMTP_PORT || "587"),
+  secure: process.env.SMTP_SECURE === "true", // true for 465, false for 587 (STARTTLS)
+  tls: {
+    rejectUnauthorized: false,
+  },
+};
+
+// Only add auth if credentials are provided
+if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+  smtpConfig.auth = {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  };
+}
+
+const transporter = nodemailer.createTransport(smtpConfig);
 
 interface EmailOptions {
-    to: string;
-    subject: string;
-    html: string;
-    text?: string;
+  to: string;
+  subject: string;
+  html: string;
+  text?: string;
 }
 
 export async function sendEmail(options: EmailOptions): Promise<boolean> {
-    try {
-        await transporter.sendMail({
-            from: `"${process.env.EMAIL_FROM_NAME || "Cozeal Vouchers"}" <${process.env.SMTP_USER}>`,
-            to: options.to,
-            subject: options.subject,
-            html: options.html,
-            text: options.text,
-        });
-        return true;
-    } catch (error) {
-        console.error("Failed to send email:", error);
-        return false;
-    }
+  try {
+    await transporter.sendMail({
+      from: `"${process.env.EMAIL_FROM_NAME || "Cozeal Vouchers"}" <${process.env.EMAIL_FROM || "info@cozeal.ai"}>`,
+      to: options.to,
+      subject: options.subject,
+      html: options.html,
+      text: options.text,
+    });
+    return true;
+  } catch (error) {
+    console.error("Failed to send email:", error);
+    return false;
+  }
 }
 
 // Email Templates
 
 export function getVerificationEmailHtml(name: string, verificationUrl: string, locale: string = "en"): string {
-    const isArabic = locale === "ar";
-    const dir = isArabic ? "rtl" : "ltr";
+  const isArabic = locale === "ar";
+  const dir = isArabic ? "rtl" : "ltr";
 
-    const content = isArabic
-        ? {
-            greeting: `مرحباً ${name}،`,
-            title: "تأكيد بريدك الإلكتروني",
-            message: "شكراً لتسجيلك في Cozeal Vouchers. يرجى الضغط على الزر أدناه لتأكيد بريدك الإلكتروني.",
-            button: "تأكيد البريد الإلكتروني",
-            expiry: "هذا الرابط صالح لمدة 24 ساعة.",
-            ignore: "إذا لم تقم بإنشاء حساب، يمكنك تجاهل هذا البريد.",
-        }
-        : {
-            greeting: `Hello ${name},`,
-            title: "Verify Your Email",
-            message: "Thank you for registering with Cozeal Vouchers. Please click the button below to verify your email address.",
-            button: "Verify Email",
-            expiry: "This link is valid for 24 hours.",
-            ignore: "If you didn't create an account, you can safely ignore this email.",
-        };
+  const content = isArabic
+    ? {
+      greeting: `مرحباً ${name}،`,
+      title: "تأكيد بريدك الإلكتروني",
+      message: "شكراً لتسجيلك في Cozeal Vouchers. يرجى الضغط على الزر أدناه لتأكيد بريدك الإلكتروني.",
+      button: "تأكيد البريد الإلكتروني",
+      expiry: "هذا الرابط صالح لمدة 24 ساعة.",
+      ignore: "إذا لم تقم بإنشاء حساب، يمكنك تجاهل هذا البريد.",
+    }
+    : {
+      greeting: `Hello ${name},`,
+      title: "Verify Your Email",
+      message: "Thank you for registering with Cozeal Vouchers. Please click the button below to verify your email address.",
+      button: "Verify Email",
+      expiry: "This link is valid for 24 hours.",
+      ignore: "If you didn't create an account, you can safely ignore this email.",
+    };
 
-    return `
+  return `
     <!DOCTYPE html>
     <html dir="${dir}" lang="${locale}">
     <head>
@@ -101,28 +111,28 @@ export function getVerificationEmailHtml(name: string, verificationUrl: string, 
 }
 
 export function getPasswordResetEmailHtml(name: string, resetUrl: string, locale: string = "en"): string {
-    const isArabic = locale === "ar";
-    const dir = isArabic ? "rtl" : "ltr";
+  const isArabic = locale === "ar";
+  const dir = isArabic ? "rtl" : "ltr";
 
-    const content = isArabic
-        ? {
-            greeting: `مرحباً ${name}،`,
-            title: "إعادة تعيين كلمة المرور",
-            message: "لقد طلبت إعادة تعيين كلمة المرور الخاصة بك. اضغط على الزر أدناه لإنشاء كلمة مرور جديدة.",
-            button: "إعادة تعيين كلمة المرور",
-            expiry: "هذا الرابط صالح لمدة ساعة واحدة.",
-            ignore: "إذا لم تطلب إعادة تعيين كلمة المرور، يمكنك تجاهل هذا البريد.",
-        }
-        : {
-            greeting: `Hello ${name},`,
-            title: "Reset Your Password",
-            message: "You requested to reset your password. Click the button below to create a new password.",
-            button: "Reset Password",
-            expiry: "This link is valid for 1 hour.",
-            ignore: "If you didn't request a password reset, you can safely ignore this email.",
-        };
+  const content = isArabic
+    ? {
+      greeting: `مرحباً ${name}،`,
+      title: "إعادة تعيين كلمة المرور",
+      message: "لقد طلبت إعادة تعيين كلمة المرور الخاصة بك. اضغط على الزر أدناه لإنشاء كلمة مرور جديدة.",
+      button: "إعادة تعيين كلمة المرور",
+      expiry: "هذا الرابط صالح لمدة ساعة واحدة.",
+      ignore: "إذا لم تطلب إعادة تعيين كلمة المرور، يمكنك تجاهل هذا البريد.",
+    }
+    : {
+      greeting: `Hello ${name},`,
+      title: "Reset Your Password",
+      message: "You requested to reset your password. Click the button below to create a new password.",
+      button: "Reset Password",
+      expiry: "This link is valid for 1 hour.",
+      ignore: "If you didn't request a password reset, you can safely ignore this email.",
+    };
 
-    return `
+  return `
     <!DOCTYPE html>
     <html dir="${dir}" lang="${locale}">
     <head>
@@ -165,41 +175,41 @@ export function getPasswordResetEmailHtml(name: string, resetUrl: string, locale
 }
 
 export function getVoucherDeliveryEmailHtml(
-    recipientName: string,
-    voucherCode: string,
-    certificateName: string,
-    expiryDate: string,
-    institutionName: string | null,
-    locale: string = "en"
+  recipientName: string,
+  voucherCode: string,
+  certificateName: string,
+  expiryDate: string,
+  institutionName: string | null,
+  locale: string = "en"
 ): string {
-    const isArabic = locale === "ar";
-    const dir = isArabic ? "rtl" : "ltr";
+  const isArabic = locale === "ar";
+  const dir = isArabic ? "rtl" : "ltr";
 
-    const content = isArabic
-        ? {
-            greeting: `مرحباً ${recipientName}،`,
-            title: "قسيمة امتحان CompTIA الخاصة بك",
-            fromInstitution: institutionName ? `من ${institutionName}` : "",
-            certificate: "الشهادة",
-            voucherCode: "رمز القسيمة",
-            validUntil: "صالحة حتى",
-            scheduleExam: "جدولة الامتحان الآن",
-            instructions: "لاستخدام قسيمتك، قم بزيارة موقع CompTIA وأدخل الرمز أعلاه عند جدولة امتحانك.",
-            support: "إذا كان لديك أي أسئلة، لا تتردد في التواصل معنا.",
-        }
-        : {
-            greeting: `Hello ${recipientName},`,
-            title: "Your CompTIA Exam Voucher",
-            fromInstitution: institutionName ? `from ${institutionName}` : "",
-            certificate: "Certificate",
-            voucherCode: "Voucher Code",
-            validUntil: "Valid Until",
-            scheduleExam: "Schedule Your Exam",
-            instructions: "To use your voucher, visit the CompTIA website and enter the code above when scheduling your exam.",
-            support: "If you have any questions, feel free to contact us.",
-        };
+  const content = isArabic
+    ? {
+      greeting: `مرحباً ${recipientName}،`,
+      title: "قسيمة امتحان CompTIA الخاصة بك",
+      fromInstitution: institutionName ? `من ${institutionName}` : "",
+      certificate: "الشهادة",
+      voucherCode: "رمز القسيمة",
+      validUntil: "صالحة حتى",
+      scheduleExam: "جدولة الامتحان الآن",
+      instructions: "لاستخدام قسيمتك، قم بزيارة موقع CompTIA وأدخل الرمز أعلاه عند جدولة امتحانك.",
+      support: "إذا كان لديك أي أسئلة، لا تتردد في التواصل معنا.",
+    }
+    : {
+      greeting: `Hello ${recipientName},`,
+      title: "Your CompTIA Exam Voucher",
+      fromInstitution: institutionName ? `from ${institutionName}` : "",
+      certificate: "Certificate",
+      voucherCode: "Voucher Code",
+      validUntil: "Valid Until",
+      scheduleExam: "Schedule Your Exam",
+      instructions: "To use your voucher, visit the CompTIA website and enter the code above when scheduling your exam.",
+      support: "If you have any questions, feel free to contact us.",
+    };
 
-    return `
+  return `
     <!DOCTYPE html>
     <html dir="${dir}" lang="${locale}">
     <head>
@@ -265,53 +275,53 @@ export function getVoucherDeliveryEmailHtml(
 }
 
 export function getOrderConfirmationEmailHtml(
-    customerName: string,
-    orderNumber: string,
-    items: Array<{ name: string; quantity: number; price: number }>,
-    subtotal: number,
-    discount: number,
-    vat: number,
-    total: number,
-    locale: string = "en"
+  customerName: string,
+  orderNumber: string,
+  items: Array<{ name: string; quantity: number; price: number }>,
+  subtotal: number,
+  discount: number,
+  vat: number,
+  total: number,
+  locale: string = "en"
 ): string {
-    const isArabic = locale === "ar";
-    const dir = isArabic ? "rtl" : "ltr";
+  const isArabic = locale === "ar";
+  const dir = isArabic ? "rtl" : "ltr";
 
-    const content = isArabic
-        ? {
-            greeting: `مرحباً ${customerName}،`,
-            title: "تأكيد الطلب",
-            message: "شكراً لطلبك! تم استلام الدفع بنجاح.",
-            orderNumber: "رقم الطلب",
-            item: "المنتج",
-            qty: "الكمية",
-            price: "السعر",
-            subtotal: "المجموع الفرعي",
-            discount: "الخصم",
-            vat: "ضريبة القيمة المضافة (15%)",
-            total: "الإجمالي",
-            nextSteps: "الخطوات التالية",
-            nextStepsMessage: "سيتم إرسال رموز القسائم الخاصة بك إلى بريدك الإلكتروني قريباً.",
-            sar: "ر.س",
-        }
-        : {
-            greeting: `Hello ${customerName},`,
-            title: "Order Confirmation",
-            message: "Thank you for your order! Your payment has been received successfully.",
-            orderNumber: "Order Number",
-            item: "Item",
-            qty: "Qty",
-            price: "Price",
-            subtotal: "Subtotal",
-            discount: "Discount",
-            vat: "VAT (15%)",
-            total: "Total",
-            nextSteps: "Next Steps",
-            nextStepsMessage: "Your voucher codes will be sent to your email shortly.",
-            sar: "SAR",
-        };
+  const content = isArabic
+    ? {
+      greeting: `مرحباً ${customerName}،`,
+      title: "تأكيد الطلب",
+      message: "شكراً لطلبك! تم استلام الدفع بنجاح.",
+      orderNumber: "رقم الطلب",
+      item: "المنتج",
+      qty: "الكمية",
+      price: "السعر",
+      subtotal: "المجموع الفرعي",
+      discount: "الخصم",
+      vat: "ضريبة القيمة المضافة (15%)",
+      total: "الإجمالي",
+      nextSteps: "الخطوات التالية",
+      nextStepsMessage: "سيتم إرسال رموز القسائم الخاصة بك إلى بريدك الإلكتروني قريباً.",
+      sar: "ر.س",
+    }
+    : {
+      greeting: `Hello ${customerName},`,
+      title: "Order Confirmation",
+      message: "Thank you for your order! Your payment has been received successfully.",
+      orderNumber: "Order Number",
+      item: "Item",
+      qty: "Qty",
+      price: "Price",
+      subtotal: "Subtotal",
+      discount: "Discount",
+      vat: "VAT (15%)",
+      total: "Total",
+      nextSteps: "Next Steps",
+      nextStepsMessage: "Your voucher codes will be sent to your email shortly.",
+      sar: "SAR",
+    };
 
-    const itemsHtml = items.map(item => `
+  const itemsHtml = items.map(item => `
     <tr>
       <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${item.name}</td>
       <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: center;">${item.quantity}</td>
@@ -319,7 +329,7 @@ export function getOrderConfirmationEmailHtml(
     </tr>
   `).join("");
 
-    return `
+  return `
     <!DOCTYPE html>
     <html dir="${dir}" lang="${locale}">
     <head>
@@ -401,31 +411,31 @@ export function getOrderConfirmationEmailHtml(
 }
 
 export function getInstitutionApprovedEmailHtml(
-    contactName: string,
-    institutionName: string,
-    loginUrl: string,
-    locale: string = "en"
+  contactName: string,
+  institutionName: string,
+  loginUrl: string,
+  locale: string = "en"
 ): string {
-    const isArabic = locale === "ar";
-    const dir = isArabic ? "rtl" : "ltr";
+  const isArabic = locale === "ar";
+  const dir = isArabic ? "rtl" : "ltr";
 
-    const content = isArabic
-        ? {
-            greeting: `مرحباً ${contactName}،`,
-            title: "تمت الموافقة على حسابكم!",
-            message: `يسعدنا إبلاغكم بأنه تمت الموافقة على حساب ${institutionName} في Cozeal Vouchers.`,
-            benefits: "يمكنكم الآن الاستفادة من الأسعار الخاصة بالمؤسسات.",
-            button: "تسجيل الدخول الآن",
-        }
-        : {
-            greeting: `Hello ${contactName},`,
-            title: "Your Account Has Been Approved!",
-            message: `We're pleased to inform you that ${institutionName}'s account has been approved on Cozeal Vouchers.`,
-            benefits: "You can now enjoy institutional pricing on all CompTIA exam vouchers.",
-            button: "Login Now",
-        };
+  const content = isArabic
+    ? {
+      greeting: `مرحباً ${contactName}،`,
+      title: "تمت الموافقة على حسابكم!",
+      message: `يسعدنا إبلاغكم بأنه تمت الموافقة على حساب ${institutionName} في Cozeal Vouchers.`,
+      benefits: "يمكنكم الآن الاستفادة من الأسعار الخاصة بالمؤسسات.",
+      button: "تسجيل الدخول الآن",
+    }
+    : {
+      greeting: `Hello ${contactName},`,
+      title: "Your Account Has Been Approved!",
+      message: `We're pleased to inform you that ${institutionName}'s account has been approved on Cozeal Vouchers.`,
+      benefits: "You can now enjoy institutional pricing on all CompTIA exam vouchers.",
+      button: "Login Now",
+    };
 
-    return `
+  return `
     <!DOCTYPE html>
     <html dir="${dir}" lang="${locale}">
     <head>
@@ -467,31 +477,31 @@ export function getInstitutionApprovedEmailHtml(
 }
 
 export function getInstitutionRejectedEmailHtml(
-    contactName: string,
-    institutionName: string,
-    rejectionReason: string,
-    locale: string = "en"
+  contactName: string,
+  institutionName: string,
+  rejectionReason: string,
+  locale: string = "en"
 ): string {
-    const isArabic = locale === "ar";
-    const dir = isArabic ? "rtl" : "ltr";
+  const isArabic = locale === "ar";
+  const dir = isArabic ? "rtl" : "ltr";
 
-    const content = isArabic
-        ? {
-            greeting: `مرحباً ${contactName}،`,
-            title: "تحديث حالة الطلب",
-            message: `نأسف لإبلاغكم بأنه تم رفض طلب تسجيل ${institutionName} في Cozeal Vouchers.`,
-            reason: "السبب",
-            contact: "إذا كنت تعتقد أن هذا خطأ أو لديك أي استفسارات، يرجى التواصل معنا.",
-        }
-        : {
-            greeting: `Hello ${contactName},`,
-            title: "Application Status Update",
-            message: `We regret to inform you that ${institutionName}'s registration application to Cozeal Vouchers has been declined.`,
-            reason: "Reason",
-            contact: "If you believe this is an error or have any questions, please contact us.",
-        };
+  const content = isArabic
+    ? {
+      greeting: `مرحباً ${contactName}،`,
+      title: "تحديث حالة الطلب",
+      message: `نأسف لإبلاغكم بأنه تم رفض طلب تسجيل ${institutionName} في Cozeal Vouchers.`,
+      reason: "السبب",
+      contact: "إذا كنت تعتقد أن هذا خطأ أو لديك أي استفسارات، يرجى التواصل معنا.",
+    }
+    : {
+      greeting: `Hello ${contactName},`,
+      title: "Application Status Update",
+      message: `We regret to inform you that ${institutionName}'s registration application to Cozeal Vouchers has been declined.`,
+      reason: "Reason",
+      contact: "If you believe this is an error or have any questions, please contact us.",
+    };
 
-    return `
+  return `
     <!DOCTYPE html>
     <html dir="${dir}" lang="${locale}">
     <head>

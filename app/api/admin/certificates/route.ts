@@ -55,22 +55,35 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const {
             code,
+            slug,
+            category,
             nameEn,
             nameAr,
             descriptionEn,
             descriptionAr,
             examCode,
+            examCodes,
+            numberOfExams,
             retailPrice,
             institutionBasePrice,
             validityMonths = 12,
             sortOrder = 0,
             imageUrl,
+            featuresEn,
+            featuresAr,
         } = body;
 
         // Validation
         if (!code || !nameEn || !nameAr || !descriptionEn || !descriptionAr || !examCode) {
             return NextResponse.json(
                 { error: "Required fields are missing" },
+                { status: 400 }
+            );
+        }
+
+        if (!category || !slug) {
+            return NextResponse.json(
+                { error: "Category and slug are required" },
                 { status: 400 }
             );
         }
@@ -95,16 +108,22 @@ export async function POST(request: NextRequest) {
 
         const certificate = await Certificate.create({
             code: code.toUpperCase(),
+            slug,
+            category,
             nameEn,
             nameAr,
             descriptionEn,
             descriptionAr,
             examCode,
+            examCodes: examCodes || [],
+            numberOfExams: numberOfExams || 1,
             retailPrice,
             institutionBasePrice,
             validityMonths,
             sortOrder,
             imageUrl,
+            featuresEn: featuresEn || [],
+            featuresAr: featuresAr || [],
             isActive: true,
         });
 
